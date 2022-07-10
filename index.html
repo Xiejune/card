@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- google font 字型 -->
+  <link href="https://fonts.googleapis.com/css2?family=Hurricane&family=Londrina+Solid:wght@100;300;400;900&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <title>成語對對碰</title>
+  <style>
+    /* 清除預設 和 自訂字型 和 盒模型計算 */
+    * {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      box-sizing: border-box;
+      font-family: 'Permanent Marker', cursive;
+    }
+
+    #bg {
+      width: 100vw;
+      height: 100vh;
+      background: url('./images/seaBackground.png') no-repeat bottom center/cover;
+
+      position: relative;
+    }
+
+    /* 遊戲開始按鈕 */
+    #btn-start {
+      border-radius: 30px;
+      font-weight: bolder;
+      font-size: 3rem;
+      color: darkblue;
+      background-color: orange;
+      border: 3px dashed orangered;
+      padding: 1rem;
+
+      position: absolute;
+      top: 50%;
+      left: 30%;
+      transform: translate(-50%, -50%);
+
+      cursor: pointer;
+    }
+
+    #btn-start:hover {
+      font-size: 2.7rem;
+    }
+
+    /* 遊戲規則按鈕 */
+    #btn-rule {
+      border-radius: 30px;
+      font-weight: bolder;
+      font-size: 3rem;
+      color: darkblue;
+      background-color: orange;
+      border: 3px dashed orangered;
+      padding: 1rem;
+
+      position: absolute;
+      top: 50%;
+      left: 70%;
+      transform: translate(-50%, -50%);
+
+      cursor: pointer;
+    }
+
+    #btn-rule:hover {
+      font-size: 2.7rem;
+    }
+
+    #rule {
+      width: 60%;
+      height: 50%;
+      background: rgb(52, 80, 116);
+      border-radius: 100px 0 100px 0;
+
+      display: none;
+      flex-direction: column;
+      justify-content: space-evenly;
+
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #rule #cross-x {
+      width: 6%;
+      height: 10%;
+      font-size: 1.5rem;
+      border: 3px solid white;
+      color: white;
+      cursor: pointer;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #rule p {
+      width: 100%;
+      font-size: 2rem;
+      padding: 0 1.5rem;
+      font-weight: bolder;
+      color: white;
+      text-align: center;
+    }
+
+    /* 遊戲區域 */
+    #game {
+      height: 70%;
+      width: 90%;
+      margin: auto;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    #game .content {
+      width: 100%;
+      height: 90%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+
+      /* 之後裡面的內容會使用到定位 */
+      position: relative;
+    }
+
+    /* 製作卡片 */
+    #game .card {
+      width: calc(100% / 7);
+      height: calc(100% / 2 - 5%);
+
+      position: relative;
+      /* 設定子元素在 3D 空間內 */
+      transform-style: preserve-3d;
+      transition: transform 1s;
+    }
+
+    /* 卡片正面 */
+    #game .card-front {
+      width: 95%;
+      height: 95%;
+      background-image: url('./images/b1.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: absolute;
+      /* 先轉去後方 */
+      transform: rotateY(180deg);
+      /* 翻過來後隱藏另一面 */
+      backface-visibility: hidden;
+    }
+
+    /* 卡片背面 */
+    #game .card-back {
+      width: 95%;
+      height: 95%;
+      background-image: url('./images/card-back.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: absolute;
+      /* 翻過來後隱藏另一面 */
+      backface-visibility: hidden;
+    }
+
+    #game .card-open {
+      /* 點選卡牌時翻轉 */
+      transform: rotateY(180deg);
+    }
+
+    #timer {
+      height: 30%;
+      width: 90%;
+      margin: auto;
+    }
+
+    #timer div {
+      width: calc(100% - 2px - 15%);
+      height: 100%;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+
+      position: relative;
+    }
+
+    #timer div .small{
+      height: 30%;
+    }
+
+    #timer div .big {
+      width: 15%;
+
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景 -->
+  <div id="bg">
+    <!-- 遊戲開始按鈕 -->
+    <input type="button" value="start" id="btn-start">
+    <!-- 規則按鈕 -->
+    <input type="button" value="rule" id="btn-rule">
+    <div id="rule">
+      <div id="cross-x">X</div>
+      <p>1. 翻到相對應的成語可復活 2 隻小魚</p>
+      <p>2. 如果鯊魚將小魚全部吃光，則遊戲失敗。</p>
+    </div>
+
+    <!-- 遊戲區域 -->
+    <div id="game"></div>
+
+    <!-- 計時器區域 -->
+    <div id="timer"></div>
+  </div>
+
+  <!-- sweetalert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- jquery -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js' integrity='sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==' crossorigin='anonymous'></script>
+  <script>
+    // 之後功能介面會使用到的變數, 可先宣告
+    let time = 16
+    let timer = 0
+
+    // 建立一個 function 是用來產生卡片 div, 和將產生出來的卡片 div 順序打亂
+    function produceCard () {
+      // 產生一個放卡片的大區塊
+      $('#game').append(`
+      <div class="content"></div>
+      `)
+
+      // 產生 14 張卡片
+      for (let i=0; i<14; i++) {
+        $('#game .content').append(`
+        <div class="card">
+          <div class="card-front"></div>
+          <div class="card-back"></div>
+        </div>
+        `)
+      }
+
+      // 決定卡片數字(用於配對使用) - 成語上半
+      for (let i=0; i<7; i++) {
+        let num = i + 1
+        $('#game .card').eq(i).find('.card-front').css('background-image', `url(./images/b${num}.png)`)
+        $('#game .card').eq(i).attr('data-card', num)
+      }
+
+      // 決定卡片數字(用於配對使用) - 成語下半
+      for (let i=7; i<14; i++) {
+        let num = i % 7 + 1
+        $('#game .card').eq(i).find('.card-front').css('background-image', `url(./images/f${num}.png)`)
+        $('#game .card').eq(i).attr('data-card', num)
+      }
+
+      // 將這些產生出來的卡片隨機打散
+      for (let i=0; i<14; i++) {
+        // 隨機出現 0 ~ 13
+        const target = Math.round(Math.random() * 13)
+        $('#game .card').eq(target).insertAfter( $('#game .card').eq(i) )
+      }
+    }
+
+    // 建立一個 function, 用來呈現計時器進度條的改變
+    function move (timeNum, time) {
+      for (let i=timeNum-2; i>=0; i--) {
+        if ((time - 1) == i) {
+          for (let j=0; j<i; j++) {
+            $('#timer div .small').eq(j).css('opacity', '1')
+          }
+          for (let j=i; j<=timeNum-2; j++) {
+            $('#timer div .small').eq(j).css('opacity', '0')
+          }
+          $('#timer img').css('left', `${100 / (timeNum - 1) * i}%`)
+        }
+      }
+    }
+
+    // 點選到牌後要做的事情
+    $('#game').on('click', '.card', function () {
+      // 最多一次翻兩張，且正要點的這張牌還沒翻開 (相當於還未點擊牌時, 場上有最多只能翻開一張牌)
+      if ($('.card-open').length < 2 && !$(this).hasClass('card-open')) {
+        $(this).addClass('card-open')
+      }
+
+      // 如果翻開兩張了
+      if ($('.card-open').length === 2) {
+        // 如果是選到對應的成語
+        if ($('.card-open').eq(0).attr('data-card') === $('.card-open').eq(1).attr('data-card')) {
+          // 用 class 標記已完成
+          $('.card-open').addClass('card-ok')
+          // 成功時間可加 3 秒
+          time+=3
+          // 將 .card-front 淡出，如果對 .card-open 淡出會把 3D 壓平只看到卡背
+          $('.card-open .card-front').fadeTo(1500, 0)
+        }
+
+        // 不管是否一樣都將卡片翻回
+        // 點到兩張牌後, 一段時間後要自動將卡牌翻回
+        setTimeout(function () {
+          // 在執行計時器前, 立刻跑過 .card-open 裡的 .card-front 如果是透明度 0, 則將整個 .card-open 透明度都變成 0
+          $('.card-open').each(function () {
+            if ($(this).find('.card-front').css('opacity') !== '1') {
+              $(this).css('opacity', 0)
+            }
+          })
+          // 牌翻過來後, addClass(card-open), 但翻到兩張, 不管翻對翻錯, 一段時間後都要將 .card-open 拿掉, 則卡片會再轉回背面
+          $('#game .card-open').removeClass('card-open')
+          // 在時間內, 全部轉對, 則挑戰完成
+          if ($('.card-ok').length === 14) {
+            // 清除計時器
+            clearInterval(timer)
+            swal.fire({
+              title: 'Congratulations',
+              text: 'challenge success',
+              icon: 'info'
+            })
+            setTimeout(function () {
+              // 清除遊戲區域和進度條
+              $('#game .content').remove()
+              $('#timer div').remove()
+              // 恢復遊戲開始按鈕
+              $('#btn-start').attr('disabled', false)
+              $('#btn-start').css('display', 'block')
+              // 恢復遊戲規則按鈕
+              $('#btn-rule').attr('disabled', false)
+              $('#btn-rule').css('display', 'block')
+            }, 500)
+          }
+        }, 1000)
+      }
+    })
+    
+
+    // 點擊遊戲開始後
+    $('#btn-start').on('click', function () {
+      // 重設定時間
+      time = 16
+
+      // 出現進度條
+      $('#timer').append(`
+      <div><img class="big" src="./images/bigfish.gif"></div>
+      `)
+
+      for (let i=0; i<15; i++) {
+        $('#timer div').append(`
+        <img class="small" src="./images/smallfish.png">
+        `)
+      }
+
+      // 禁用 start 按鈕
+      $(this).attr('disabled', true)
+      $(this).css('display', 'none')
+      // 禁用 rule 按鈕
+      $('#btn-rule').attr('disabled', true)
+      $('#btn-rule').css('display', 'none')
+
+      // 出現翻牌遊戲區域
+      produceCard()
+
+      // 開始計時
+      timer = setInterval(function () {
+        time--
+        move(16, time)
+        if (time === 0) {
+          // 清除計時器
+          clearInterval(timer)
+          swal.fire({
+            title: 'Game over',
+            icon: 'error'
+          })
+          setTimeout(function () {
+            // 清除遊戲區域和進度條
+            $('#game .content').remove()
+            $('#timer div').remove()
+            // 恢復遊戲開始按鈕
+            $('#btn-start').attr('disabled', false)
+            $('#btn-start').css('display', 'block')
+            // 恢復遊戲規則按鈕
+            $('#btn-rule').attr('disabled', false)
+            $('#btn-rule').css('display', 'block')
+          }, 500)
+        }
+      }, 1500)
+    })
+    // 點擊 #btn-rule 進入規則介紹
+    $('#btn-rule').on('click', function () {
+      // 打開規則介紹說明
+      setTimeout(function () {
+        $('#rule').css('display', 'flex')
+      }, 500)
+    })
+
+    // 點擊 #cross-x 關閉遊戲介紹說明
+    $('#cross-x').on('click', function () {
+      $('#rule').css('display', 'none')
+    })
+  </script>
+</body>
+</html>
